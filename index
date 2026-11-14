@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul Interaktif Kaidah Pencacahan - Matematika SMA</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Konfigurasi MathJax untuk Kaidah Penulisan Notasi Matematika -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =========================================================
+           STYLING KHUSUS CETAK PDF (12pt Times New Roman, Hitam)
+           ========================================================= */
+        @media print {
+            body {
+                font-family: 'Times New Roman', Times, serif !important;
+                font-size: 12pt !important;
+                color: #000000 !important;
+                background-color: #ffffff !important;
+                line-height: 1.5;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            /* Tampilkan SEMUA topik secara berurutan saat dicetak */
+            .tab-content {
+                display: block !important;
+                opacity: 1 !important;
+                transform: none !important;
+                margin-bottom: 24px;
+            }
+
+            /* Buka semua langkah contoh soal secara otomatis saat cetak */
+            .step-box {
+                display: block !important;
+            }
+
+            .print-clean {
+                box-shadow: none !important;
+                border: 1px solid #000000 !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 12px !important;
+                margin-bottom: 14px !important;
+            }
+
+            .print-header-doc {
+                display: block !important;
+                text-align: center;
+                border-bottom: 2px solid #000;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
+
+            /* Sembunyikan UI interaktif kuis saat cetak agar menjadi lembar soal bersih */
+            .quiz-controls, .quiz-feedback, #quiz-result-box {
+                display: none !important;
+            }
+
+            input[type="radio"] {
+                appearance: none;
+                -webkit-appearance: none;
+                width: 12px;
+                height: 12px;
+                border: 1px solid #000;
+                border-radius: 50%;
+                display: inline-block;
+                margin-right: 6px;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header Dokumen Cetak (Hanya muncul saat Print PDF) -->
+    <div class="hidden print-header-doc">
+        <h1 style="font-size: 16pt; font-weight: bold; margin: 0;">MODUL PEMBELAJARAN & LEMBAR KERJA SISWA (LKS)</h1>
+        <h2 style="font-size: 14pt; font-weight: bold; margin: 4px 0;">KAIDAH PENCACAHAN: ATURAN PERKALIAN, PERMUTASI & KOMBINASI</h2>
+        <p style="font-size: 11pt; margin: 0;">Mata Pelajaran: Matematika | Kelas XII / Fase F SMA/MA</p>
+    </div>
+
+    <!-- Header & Navigasi Layar -->
+    <header class="bg-blue-900 text-white shadow-md sticky top-0 z-50 no-print">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <div class="bg-white text-blue-900 p-2.5 rounded-lg font-bold text-xl shadow-sm">
+                    <i class="fa-solid fa-sitemap"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight">E-Modul Kaidah Pencacahan</h1>
+                    <p class="text-xs text-blue-200">Aturan Perkalian, Permutasi, dan Kombinasi — Matematika SMA</p>
+                </div>
+            </div>
+            
+            <button onclick="cetakPDF()" class="bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-lg shadow transition flex items-center gap-2 text-sm cursor-pointer">
+                <i class="fa-solid fa-file-pdf"></i>
+                <span>Cetak / Simpan PDF</span>
+            </button>
+        </div>
+
+        <!-- Tab Navigasi Per Topik -->
+        <nav class="bg-blue-950/70 border-t border-blue-800">
+            <div class="max-w-5xl mx-auto px-4 flex overflow-x-auto no-scrollbar">
+                <button onclick="switchTab('perkalian')" id="btn-perkalian" class="tab-btn active px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 border-white text-white whitespace-nowrap flex items-center gap-2 transition">
+                    <i class="fa-solid fa-xmark"></i> 1. Aturan Perkalian
+                </button>
+                <button onclick="switchTab('permutasi')" id="btn-permutasi" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-blue-200 hover:text-white whitespace-nowrap flex items-center gap-2 transition">
+                    <i class="fa-solid fa-arrow-down-1-9"></i> 2. Permutasi
+                </button>
+                <button onclick="switchTab('kombinasi')" id="btn-kombinasi" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-blue-200 hover:text-white whitespace-nowrap flex items-center gap-2 transition">
+                    <i class="fa-solid fa-object-group"></i> 3. Kombinasi
+                </button>
+                <button onclick="switchTab('latihan')" id="btn-latihan" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-blue-200 hover:text-white whitespace-nowrap flex items-center gap-2 transition">
+                    <i class="fa-solid fa-pen-to-square"></i> 4. Latihan Soal
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Konten Utama -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-6 sm:py-8">
+
+        <!-- ==============================================================
+             TOPIK 1: ATURAN PERKALIAN & PENGISIAN TEMPAT (FILLING SLOTS)
+             ============================================================== -->
+        <section id="tab-perkalian" class="tab-content active">
+            <!-- Konsep Dasar -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 print-clean">
+                <div class="flex items-center gap-2 text-blue-900 font-bold text-xl mb-4 border-b pb-3">
+                    <i class="fa-solid fa-diagram-project no-print"></i>
+                    <h2>I. Topik 1: Aturan Perkalian (Kaidah Pengisian Tempat)</h2>
+                </div>
+
+                <h3 class="font-bold text-lg text-slate-800 mb-2">A. Konsep Dasar Aturan Perkalian</h3>
+                <p class="mb-3 leading-relaxed">
+                    <strong>Aturan Perkalian</strong> digunakan apabila suatu kejadian terdiri dari beberapa tahap yang <strong>berurutan dan saling berkaitan (harus terjadi semuanya/bersamaan)</strong>.
+                </p>
+
+                <div class="bg-blue-50/80 border-l-4 border-blue-800 p-4 rounded-r-lg mb-5 print-clean">
+                    <p class="font-bold text-blue-950 mb-1">Prinsip Aturan Perkalian:</p>
+                    <p class="text-sm mb-2">
+                        Jika suatu kejadian dapat terjadi dalam $k$ tahap yang saling berurutan, di mana tahap ke-$1$ dapat terjadi dalam $n_1$ cara, tahap ke-$2$ dalam $n_2$ cara, $\dots$, dan tahap ke-$k$ dalam $n_k$ cara, maka banyak seluruh cara kejadian tersebut adalah:
+                    </p>
+                    <div class="bg-white p-3 rounded border border-blue-200 text-center my-2 print-clean">
+                        $$\text{Total Cara} = n_1 \times n_2 \times n_3 \times \dots \times n_k$$
+                    </div>
+                    <p class="text-xs mt-2">
+                        <strong>Catatan Notasi Faktorial:</strong> Untuk $n \in \mathbb{N}$, didefinisikan $n! = n \times (n - 1) \times (n - 2) \times \dots \times 2 \times 1$, serta $0! = 1$ dan $1! = 1$.
+                    </p>
+                </div>
+
+                <!-- Contoh & Pembahasan Aturan Perkalian -->
+                <h3 class="font-bold text-lg text-slate-800 mb-3 mt-6">B. Contoh Soal & Pembahasan Runut (Aturan Perkalian)</h3>
+
+                <!-- Contoh 1.1: Rute Perjalanan / Pakaian -->
+                <div class="border border-slate-300 rounded-xl p-5 mb-5 bg-slate-50/50 print-clean">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                        <span class="bg-blue-100 text-blue-900 text-xs font-bold px-3 py-1 rounded-full print-clean">Contoh 1.1 — Kombinasi Rute Perjalanan</span>
+                        <div class="flex gap-1.5 no-print">
+                            <button onclick="prevStep('kali-1')" id="prev-kali-1" disabled class="px-2.5 py-1 bg-white border border-slate-300 rounded text-xs font-semibold disabled:opacity-40 cursor-pointer">Sebelumnya</button>
+                            <button onclick="nextStep('kali-1')" id="next-kali-1" class="px-2.5 py-1 bg-blue-800 text-white rounded text-xs font-semibold hover:bg-blue-900 cursor-pointer">Langkah Berikutnya</button>
+                            <button onclick="allStep('kali-1')" class="px-2.5 py-1 bg-slate-200 text-slate-800 rounded text-xs font-semibold hover:bg-slate-300 cursor-pointer">Semua</button>
+                        </div>
+                    </div>
+                    <p class="font-semibold text-slate-900 mb-3">
+                        Dari kota A ke kota B terdapat $4$ jalan yang berbeda, dan dari kota B ke kota C terdapat $3$ jalan yang berbeda. Jika Budi berangkat dari kota A menuju kota C melalui kota B, kemudian kembali lagi ke kota A melalui kota B tanpa melewati jalan yang sama saat berangkat, berapa banyak rute perjalanan pulang-pergi yang dapat dipilih Budi?
+                    </p>
+                    <div class="space-y-2.5">
+                        <div class="step-box step-kali-1 bg-white p-3 rounded border-l-4 border-blue-700 text-sm print-clean">
+                            <strong>Langkah 1 (Identifikasi Tahapan Berangkat $A \to B \to C$):</strong><br>
+                            • Rute berangkat $A \to B$: tersedia $n_1 = 4$ pilihan jalan.<br>
+                            • Rute berangkat $B \to C$: tersedia $n_2 = 3$ pilihan jalan.
+                        </div>
+                        <div class="step-box step-kali-1 hidden bg-white p-3 rounded border-l-4 border-blue-700 text-sm print-clean">
+                            <strong>Langkah 2 (Identifikasi Tahapan Pulang $C \to B \to A$):</strong><br>
+                            • Karena tidak boleh melewati jalan yang sama saat berangkat:<br>
+                            • Rute pulang $C \to B$: tersisa $n_3 = 3 - 1 = 2$ pilihan jalan.<br>
+                            • Rute pulang $B \to A$: tersisa $n_4 = 4 - 1 = 3$ pilihan jalan.
+                        </div>
+                        <div class="step-box step-kali-1 hidden bg-emerald-50 p-3 rounded border-l-4 border-emerald-600 text-sm print-clean">
+                            <strong>Langkah 3 (Hitung Total Rute dengan Aturan Perkalian):</strong><br>
+                            $$\text{Total Rute} = n_1 \times n_2 \times n_3 \times n_4 = 4 \times 3 \times 2 \times 3 = 72\text{ rute}$$
+                            Jadi, terdapat <strong>$72$ rute</strong> perjalanan pulang-pergi yang berbeda.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contoh 1.2: Filling Slots Bilangan -->
+                <div class="border border-slate-300 rounded-xl p-5 bg-slate-50/50 print-clean">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                        <span class="bg-indigo-100 text-indigo-900 text-xs font-bold px-3 py-1 rounded-full print-clean">Contoh 1.2 — Penyusunan Bilangan (Filling Slots)</span>
+                        <div class="flex gap-1.5 no-print">
+                            <button onclick="prevStep('kali-2')" id="prev-kali-2" disabled class="px-2.5 py-1 bg-white border border-slate-300 rounded text-xs font-semibold disabled:opacity-40 cursor-pointer">Sebelumnya</button>
+                            <button onclick="nextStep('kali-2')" id="next-kali-2" class="px-2.5 py-1 bg-blue-800 text-white rounded text-xs font-semibold hover:bg-blue-900 cursor-pointer">Langkah Berikutnya</button>
+                            <button onclick="allStep('kali-2')" class="px-2.5 py-1 bg-slate-200 text-slate-800 rounded text-xs font-semibold hover:bg-slate-300 cursor-pointer">Semua</button>
+                        </div>
+                    </div>
+                    <p class="font-semibold text-slate-900 mb-3">
+                        Dari angka-angka $1, 2, 3, 4, 5, 6$ akan disusun bilangan ratusan ganjil yang terdiri dari $3$ angka berbeda (tidak berulang). Banyaknya bilangan yang dapat dibentuk adalah ...
+                    </p>
+                    <div class="space-y-2.5">
+                        <div class="step-box step-kali-2 bg-white p-3 rounded border-l-4 border-indigo-600 text-sm print-clean">
+                            <strong>Langkah 1 (Tentukan Kotak Tempat & Syarat Khusus):</strong><br>
+                            Bilangan ratusan memiliki $3$ posisi: <strong>[Ratusan] $\times$ [Puluhan] $\times$ [Satuan]</strong>.<br>
+                            Syarat khusus adalah bilangan <strong>ganjil</strong>, maka pengisian dimulai dari posisi <strong>Satuan</strong>.
+                        </div>
+                        <div class="step-box step-kali-2 hidden bg-white p-3 rounded border-l-4 border-indigo-600 text-sm print-clean">
+                            <strong>Langkah 2 (Isi Setiap Kotak Berdasarkan Ketersediaan Angka):</strong><br>
+                            • <strong>Kotak Satuan:</strong> Harus angka ganjil $\{1, 3, 5\} \implies$ ada <strong>$3$ cara</strong>.<br>
+                            • <strong>Kotak Ratusan:</strong> Dari total $6$ angka, $1$ angka sudah dipakai di satuan, tersisa $6 - 1 =$ <strong>$5$ cara</strong>.<br>
+                            • <strong>Kotak Puluhan:</strong> Sudah terpakai $2$ angka (di satuan dan ratusan), tersisa $6 - 2 =$ <strong>$4$ cara</strong>.
+                        </div>
+                        <div class="step-box step-kali-2 hidden bg-emerald-50 p-3 rounded border-l-4 border-emerald-600 text-sm print-clean">
+                            <strong>Langkah 3 (Kalikan Semua Kemungkinan):</strong><br>
+                            $$\text{Banyak Bilangan} = 5 \times 4 \times 3 = 60\text{ bilangan}$$
+                            Jadi, terdapat <strong>$60$ bilangan</strong> ratusan ganjil dengan angka berbeda.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end no-print">
+                <button onclick="switchTab('permutasi')" class="bg-blue-800 hover:bg-blue-900 text-white px-5 py-2.5 rounded-lg font-medium shadow transition flex items-center gap-2 cursor-pointer">
+                    <span>Lanjut ke Topik 2: Permutasi</span> <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ==============================================================
+             TOPIK 2: PERMUTASI
+             ============================================================== -->
+        <section id="tab-permutasi" class="tab-content page-break">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 print-clean">
+                <div class="flex items-center gap-2 text-blue-900 font-bold text-xl mb-4 border-b pb-3">
+                    <i class="fa-solid fa-arrow-down-1-9 no-print"></i>
+                    <h2>II. Topik 2: Permutasi (Memperhatikan Urutan)</h2>
+                </div>
+
+                <h3 class="font-bold text-lg text-slate-800 mb-2">A. Konsep Dasar & Rumus Permutasi</h3>
+                <p class="mb-3 leading-relaxed">
+                    <strong>Permutasi</strong> adalah susunan objek-objek yang berbeda dalam <strong>urutan tertentu</strong>. Pada permutasi, urutan sangat diperhatikan sehingga susunan $(A, B) \neq (B, A)$ (contoh: pemilihan ketua-sekretaris-bendahara, juara 1-2-3, penyusunan kode/kata).
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-4">
+                    <div class="bg-blue-50/80 border border-blue-200 rounded-lg p-4 print-clean">
+                        <h4 class="font-bold text-blue-950 text-sm mb-1">1. Permutasi $r$ unsur dari $n$ unsur</h4>
+                        <div class="bg-white p-2.5 rounded border border-blue-200 text-center my-2 print-clean">
+                            $$P(n, r) = {}_nP_r = \frac{n!}{(n - r)!}$$
+                        </div>
+                        <p class="text-xs">Dengan syarat $0 \le r \le n$.</p>
+                    </div>
+
+                    <div class="bg-blue-50/80 border border-blue-200 rounded-lg p-4 print-clean">
+                        <h4 class="font-bold text-blue-950 text-sm mb-1">2. Permutasi Unsur yang Sama</h4>
+                        <div class="bg-white p-2.5 rounded border border-blue-200 text-center my-2 print-clean">
+                            $$P = \frac{n!}{k_1! \cdot k_2! \cdots k_m!}$$
+                        </div>
+                        <p class="text-xs">$k_1, k_2, \dots$ adalah banyaknya masing-masing unsur yang sama.</p>
+                    </div>
+
+                    <div class="bg-blue-50/80 border border-blue-200 rounded-lg p-4 print-clean">
+                        <h4 class="font-bold text-blue-950 text-sm mb-1">3. Permutasi Siklis (Melingkar)</h4>
+                        <div class="bg-white p-2.5 rounded border border-blue-200 text-center my-2 print-clean">
+                            $$P_{\text{siklis}} = (n - 1)!$$
+                        </div>
+                        <p class="text-xs">Untuk menyusun $n$ objek berbeda dalam posisi melingkar.</p>
+                    </div>
+                </div>
+
+                <!-- Contoh & Pembahasan Permutasi -->
+                <h3 class="font-bold text-lg text-slate-800 mb-3 mt-6">B. Contoh Soal & Pembahasan Runut (Permutasi)</h3>
+
+                <!-- Contoh 2.1: Permutasi Jabatan -->
+                <div class="border border-slate-300 rounded-xl p-5 mb-5 bg-slate-50/50 print-clean">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                        <span class="bg-blue-100 text-blue-900 text-xs font-bold px-3 py-1 rounded-full print-clean">Contoh 2.1 — Permutasi $r$ dari $n$ Unsur (Pemilihan Pengurus)</span>
+                        <div class="flex gap-1.5 no-print">
+                            <button onclick="prevStep('perm-1')" id="prev-perm-1" disabled class="px-2.5 py-1 bg-white border border-slate-300 rounded text-xs font-semibold disabled:opacity-40 cursor-pointer">Sebelumnya</button>
+                            <button onclick="nextStep('perm-1')" id="next-perm-1" class="px-2.5 py-1 bg-blue-800 text-white rounded text-xs font-semibold hover:bg-blue-900 cursor-pointer">Langkah Berikutnya</button>
+                            <button onclick="allStep('perm-1')" class="px-2.5 py-1 bg-slate-200 text-slate-800 rounded text-xs font-semibold hover:bg-slate-300 cursor-pointer">Semua</button>
+                        </div>
+                    </div>
+                    <p class="font-semibold text-slate-900 mb-3">
+                        Dari $8$ orang kandidat pengurus OSIS, akan dipilih $3$ orang untuk menduduki jabatan sebagai <strong>Ketua, Sekretaris, dan Bendahara</strong>. Banyaknya susunan pengurus berbeda yang mungkin terbentuk adalah ...
+                    </p>
+                    <div class="space-y-2.5">
+                        <div class="step-box step-perm-1 bg-white p-3 rounded border-l-4 border-blue-700 text-sm print-clean">
+                            <strong>Langkah 1 (Identifikasi Jenis Masalah & Variabel):</strong><br>
+                            • Jabatan Ketua, Sekretaris, dan Bendahara memiliki kedudukan berbeda (<strong>urutan diperhatikan</strong> $\implies$ gunakan <strong>Permutasi</strong>).<br>
+                            • Total kandidat: $n = 8$, banyak posisi yang dipilih: $r = 3$.
+                        </div>
+                        <div class="step-box step-perm-1 hidden bg-white p-3 rounded border-l-4 border-blue-700 text-sm print-clean">
+                            <strong>Langkah 2 (Substitusi ke Rumus Permutasi):</strong><br>
+                            $$
+                            \begin{aligned}
+                            {}_8P_3 &= \frac{8!}{(8 - 3)!} = \frac{8!}{5!} \\
+                            &= \frac{8 \times 7 \times 6 \times 5!}{5!}
+                            \end{aligned}
+                            $$
+                        </div>
+                        <div class="step-box step-perm-1 hidden bg-emerald-50 p-3 rounded border-l-4 border-emerald-600 text-sm print-clean">
+                            <strong>Langkah 3 (Sederhanakan & Hitung Hasil):</strong><br>
+                            $${}_8P_3 = 8 \times 7 \times 6 = 336\text{ susunan}$$
+                            Jadi, terdapat <strong>$336$ susunan</strong> pengurus yang berbeda.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contoh 2.2: Permutasi Unsur Sama & Siklis -->
+                <div class="border border-slate-300 rounded-xl p-5 bg-slate-50/50 print-clean">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                        <span class="bg-indigo-100 text-indigo-900 text-xs font-bold px-3 py-1 rounded-full print-clean">Contoh 2.2 — Permutasi dengan Unsur yang Sama</span>
+                        <div class="flex gap-1.5 no-print">
+                            <button onclick="prevStep('perm-2')" id="prev-perm-2" disabled class="px-2.5 py-1 bg-white border border-slate-300 rounded text-xs font-semibold disabled:opacity-40 cursor-pointer">Sebelumnya</button>
+                            <button onclick="nextStep('perm-2')" id="next-perm-2" class="px-2.5 py-1 bg-blue-800 text-white rounded text-xs font-semibold hover:bg-blue-900 cursor-pointer">Langkah Berikutnya</button>
+                            <button onclick="allStep('perm-2')" class="px-2.5 py-1 bg-slate-200 text-slate-800 rounded text-xs font-semibold hover:bg-slate-300 cursor-pointer">Semua</button>
+                        </div>
+                    </div>
+                    <p class="font-semibold text-slate-900 mb-3">
+                        Tentukan banyaknya susunan huruf berbeda yang dapat dibentuk dari kata <strong>"MATEMATIKA"</strong>!
+                    </p>
+                    <div class="space-y-2.5">
+                        <div class="step-box step-perm-2 bg-white p-3 rounded border-l-4 border-indigo-600 text-sm print-clean">
+                            <strong>Langkah 1 (Hitung Total Huruf & Huruf yang Sama):</strong><br>
+                            • Total huruf pada kata MATEMATIKA: $n = 10$ huruf.<br>
+                            • Huruf yang muncul lebih dari satu kali:<br>
+                            &nbsp;&nbsp;- Huruf <strong>M</strong>: $k_1 = 2$<br>
+                            &nbsp;&nbsp;- Huruf <strong>A</strong>: $k_2 = 3$<br>
+                            &nbsp;&nbsp;- Huruf <strong>T</strong>: $k_3 = 2$<br>
+                            &nbsp;&nbsp;(Huruf E, I, K masing-masing berjumlah $1$).
+                        </div>
+                        <div class="step-box step-perm-2 hidden bg-white p-3 rounded border-l-4 border-indigo-600 text-sm print-clean">
+                            <strong>Langkah 2 (Substitusi ke Rumus Permutasi Unsur Sama):</strong><br>
+                            $$
+                            \begin{aligned}
+                            P &= \frac{10!}{2! \cdot 3! \cdot 2!} \\
+                            &= \frac{10 \times 9 \times 8 \times 7 \times 6 \times 5 \times 4 \times 3!}{(2 \times 1) \times 3! \times (2 \times 1)}
+                            \end{aligned}
+                            $$
+                        </div>
+                        <div class="step-box step-perm-2 hidden bg-emerald-50 p-3 rounded border-l-4 border-emerald-600 text-sm print-clean">
+                            <strong>Langkah 3 (Sederhanakan Faktorial):</strong><br>
+                            $$
+                            \begin{aligned}
+                            P &= \frac{10 \times 9 \times 8 \times 7 \times 6 \times 5 \times 4}{4} \\
+                            &= 10 \times 9 \times 8 \times 7 \times 6 \times 5 = 151.200\text{ susunan}
+                            \end{aligned}
+                            $$
+                            Jadi, terdapat <strong>$151.200$ susunan</strong> huruf berbeda.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between no-print">
+                <button onclick="switchTab('perkalian')" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2.5 rounded-lg font-medium transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-arrow-left"></i> <span>Aturan Perkalian</span>
+                </button>
+                <button onclick="switchTab('kombinasi')" class="bg-blue-800 hover:bg-blue-900 text-white px-5 py-2.5 rounded-lg font-medium shadow transition flex items-center gap-2 cursor-pointer">
+                    <span>Lanjut ke Topik 3: Kombinasi</span> <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ==============================================================
+             TOPIK 3: KOMBINASI
+             ============================================================== -->
+        <section id="tab-kombinasi" class="tab-content page-break">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 print-clean">
+                <div class="flex items-center gap-2 text-blue-900 font-bold text-xl mb-4 border-b pb-3">
+                    <i class="fa-solid fa-object-group no-print"></i>
+                    <h2>III. Topik 3: Kombinasi (Tanpa Memperhatikan Urutan)</h2>
+                </div>
+
+                <h3 class="font-bold text-lg text-slate-800 mb-2">A. Konsep Dasar & Rumus Kombinasi</h3>
+                <p class="mb-3 leading-relaxed">
+                    <strong>Kombinasi</strong> adalah pemilihan $r$ objek dari $n$ objek yang berbeda <strong>tanpa memperhatikan urutan</strong>. Pada kombinasi, susunan $\{A, B\}$ dianggap sama dengan $\{B, A\}$ (contoh: pemilihan tim lomba, pengambilan bola acak dari kotak, jabat tangan, pemilihan soal ujian).
+                </p>
+
+                <div class="bg-blue-50/80 border-l-4 border-blue-800 p-4 rounded-r-lg mb-5 print-clean">
+                    <p class="font-bold text-blue-950 mb-1">Rumus Kombinasi $r$ unsur dari $n$ unsur:</p>
+                    <div class="bg-white p-3 rounded border border-blue-200 text-center my-2 print-clean">
+                        $$C(n, r) = {}_nC_r = \binom{n}{r} = \frac{n!}{r!(n - r)!}$$
+                    </div>
+                    <p class="text-xs mt-2">
+                        <strong>Keterangan & Sifat Penting:</strong> $0 \le r \le n$, berlaku sifat simetri ${}_nC_r = {}_nC_{n-r}$, serta ${}_nC_0 = {}_nC_n = 1$ dan ${}_nC_1 = n$.
+                    </p>
+                </div>
+
+                <!-- Contoh & Pembahasan Kombinasi -->
+                <h3 class="font-bold text-lg text-slate-800 mb-3 mt-6">B. Contoh Soal & Pembahasan Runut (Kombinasi)</h3>
+
+                <!-- Contoh 3.1: Dasar Pemilihan Soal / Tim -->
+                <div class="border border-slate-300 rounded-xl p-5 mb-5 bg-slate-50/50 print-clean">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                        <span class="bg-blue-100 text-blue-900 text-xs font-bold px-3 py-1 rounded-full print-clean">Contoh 3.1 — Pemilihan Soal Ujian dengan Syarat Wajib</span>
+                        <div class="flex gap-1.5 no-print">
+                            <button onclick="prevStep('komb-1')" id="prev-komb-1" disabled class="px-2.5 py-1 bg-white border border-slate-300 rounded text-xs font-semibold disabled:opacity-40 cursor-pointer">Sebelumnya</button>
+                            <button onclick="nextStep('komb-1')" id="next-komb-1" class="px-2.5 py-1 bg-blue-800 text-white rounded text-xs font-semibold hover:bg-blue-900 cursor-pointer">Langkah Berikutnya</button>
+                            <button onclick="allStep('komb-1')" class="px-2.5 py-1 bg-slate-200 text-slate-800 rounded text-xs font-semibold hover:bg-slate-300 cursor-pointer">Semua</button>
+                        </div>
+                    </div>
+                    <p class="font-semibold text-slate-900 mb-3">
+                        Seorang siswa diminta mengerjakan $8$ soal dari $10$ soal ujian yang tersedia. Jika soal nomor $1$ sampai dengan nomor $3$ wajib dikerjakan, banyaknya pilihan kombinasi soal yang dapat dikerjakan siswa tersebut adalah ...
+                    </p>
+                    <div class="space-y-2.5">
+                        <div class="step-box step-komb-1 bg-white p-3 rounded border-l-4 border-blue-700 text-sm print-clean">
+                            <strong>Langkah 1 (Analisis Soal Wajib & Sisa Pilihan):</strong><br>
+                            • Urutan pengerjaan soal tidak dibedakan $\implies$ gunakan <strong>Kombinasi</strong>.<br>
+                            • Soal nomor $1, 2, 3$ ($3$ soal) <strong>wajib</strong> dikerjakan, sehingga tidak perlu dipilih lagi ($1$ cara).<br>
+                            • Sisa soal yang harus dipilih siswa: $r = 8 - 3 = 5$ soal.<br>
+                            • Sisa stok soal yang tersedia untuk dipilih: $n = 10 - 3 = 7$ soal (nomor $4$ s.d. $10$).
+                        </div>
+                        <div class="step-box step-komb-1 hidden bg-white p-3 rounded border-l-4 border-blue-700 text-sm print-clean">
+                            <strong>Langkah 2 (Hitung Kombinasi ${}_7C_5$):</strong><br>
+                            $$
+                            \begin{aligned}
+                            {}_7C_5 &= \frac{7!}{5!(7 - 5)!} = \frac{7!}{5! \cdot 2!} \\
+                            &= \frac{7 \times 6 \times 5!}{5! \times (2 \times 1)}
+                            \end{aligned}
+                            $$
+                        </div>
+                        <div class="step-box step-komb-1 hidden bg-emerald-50 p-3 rounded border-l-4 border-emerald-600 text-sm print-clean">
+                            <strong>Langkah 3 (Sederhanakan Hasil):</strong><br>
+                            $${}_7C_5 = \frac{7 \times 6}{2} = \frac{42}{2} = 21\text{ pilihan}$$
+                            Jadi, terdapat <strong>$21$ pilihan</strong> kombinasi soal.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contoh 3.2: Kombinasi Majemuk (Pengambilan Bola dari Kotak) -->
+                <div class="border border-slate-300 rounded-xl p-5 bg-slate-50/50 print-clean">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                        <span class="bg-indigo-100 text-indigo-900 text-xs font-bold px-3 py-1 rounded-full print-clean">Contoh 3.2 — Kombinasi Majemuk (Pengambilan Sampel Berbeda)</span>
+                        <div class="flex gap-1.5 no-print">
+                            <button onclick="prevStep('komb-2')" id="prev-komb-2" disabled class="px-2.5 py-1 bg-white border border-slate-300 rounded text-xs font-semibold disabled:opacity-40 cursor-pointer">Sebelumnya</button>
+                            <button onclick="nextStep('komb-2')" id="next-komb-2" class="px-2.5 py-1 bg-blue-800 text-white rounded text-xs font-semibold hover:bg-blue-900 cursor-pointer">Langkah Berikutnya</button>
+                            <button onclick="allStep('komb-2')" class="px-2.5 py-1 bg-slate-200 text-slate-800 rounded text-xs font-semibold hover:bg-slate-300 cursor-pointer">Semua</button>
+                        </div>
+                    </div>
+                    <p class="font-semibold text-slate-900 mb-3">
+                        Sebuah kotak berisi $6$ bola merah dan $4$ bola putih. Dari kotak tersebut diambil $3$ bola sekaligus secara acak. Banyaknya cara terambilnya <strong>$2$ bola merah dan $1$ bola putih</strong> adalah ...
+                    </p>
+                    <div class="space-y-2.5">
+                        <div class="step-box step-komb-2 bg-white p-3 rounded border-l-4 border-indigo-600 text-sm print-clean">
+                            <strong>Langkah 1 (Pecah Kejadian Berdasarkan Warna Bola):</strong><br>
+                            • Pengambilan $2$ bola merah dari $6$ bola merah: ${}_6C_2$.<br>
+                            • Pengambilan $1$ bola putih dari $4$ bola putih: ${}_4C_1$.<br>
+                            • Karena kedua kejadian terjadi bersamaan ("dan"), hasilnya dikalikan (Aturan Perkalian).
+                        </div>
+                        <div class="step-box step-komb-2 hidden bg-white p-3 rounded border-l-4 border-indigo-600 text-sm print-clean">
+                            <strong>Langkah 2 (Hitung Nilai Masing-Masing Kombinasi):</strong><br>
+                            $${}_6C_2 = \frac{6!}{2!(6-2)!} = \frac{6 \times 5 \times 4!}{2 \times 1 \times 4!} = \frac{30}{2} = 15$$
+                            $${}_4C_1 = \frac{4!}{1!(4-1)!} = 4$$
+                        </div>
+                        <div class="step-box step-komb-2 hidden bg-emerald-50 p-3 rounded border-l-4 border-emerald-600 text-sm print-clean">
+                            <strong>Langkah 3 (Kalikan Kedua Hasil):</strong><br>
+                            $$\text{Total Cara} = {}_6C_2 \times {}_4C_1 = 15 \times 4 = 60\text{ cara}$$
+                            Jadi, terdapat <strong>$60$ cara</strong> pengambilan bola.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between no-print">
+                <button onclick="switchTab('permutasi')" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2.5 rounded-lg font-medium transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-arrow-left"></i> <span>Permutasi</span>
+                </button>
+                <button onclick="switchTab('latihan')" class="bg-blue-800 hover:bg-blue-900 text-white px-5 py-2.5 rounded-lg font-medium shadow transition flex items-center gap-2 cursor-pointer">
+                    <span>Mulai Latihan Soal</span> <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ==============================================================
+             BAGIAN 4: LATIHAN SOAL MANDIRI (SEMUA TOPIK)
+             ============================================================== -->
+        <section id="tab-latihan" class="tab-content page-break">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 print-clean">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 mb-4">
+                    <div class="flex items-center gap-2 text-blue-900 font-bold text-xl">
+                        <i class="fa-solid fa-clipboard-check no-print"></i>
+                        <h2>IV. Latihan Soal Mandiri Kaidah Pencacahan</h2>
+                    </div>
+                    <span class="text-xs font-semibold bg-slate-100 text-slate-700 px-3 py-1 rounded-full no-print">
+                        6 Soal (Aturan Perkalian, Permutasi & Kombinasi)
+                    </span>
+                </div>
+
+                <p class="text-sm text-slate-600 mb-6 no-print">
+                    Pilih satu jawaban yang paling tepat pada setiap soal, kemudian tekan tombol <strong>"Periksa Jawaban"</strong> untuk melihat skor akhir serta pembahasannya.
+                </p>
+
+                <form id="quiz-form" class="space-y-6">
+                    <!-- Soal dirender oleh JavaScript -->
+                </form>
+
+                <!-- Tombol Aksi Kuis -->
+                <div class="mt-8 pt-4 border-t flex flex-wrap gap-3 items-center justify-between quiz-controls no-print">
+                    <button type="button" onclick="periksaKuis()" class="bg-blue-800 hover:bg-blue-900 text-white font-semibold px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-check-double"></i> Periksa Jawaban
+                    </button>
+                    <button type="button" onclick="resetKuis()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-medium px-4 py-2.5 rounded-lg transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-rotate-right"></i> Ulangi Latihan
+                    </button>
+                </div>
+
+                <!-- Kotak Hasil Skor -->
+                <div id="quiz-result-box" class="hidden mt-6 p-5 rounded-xl border-2 no-print">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-bold" id="result-title">Hasil Latihan Anda</h3>
+                            <p class="text-sm mt-1" id="result-desc"></p>
+                        </div>
+                        <div class="text-center bg-white px-4 py-2 rounded-lg shadow-xs border">
+                            <span class="block text-xs text-slate-500 uppercase font-bold">Skor Akhir</span>
+                            <span class="text-3xl font-extrabold text-blue-800" id="result-score">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs no-print mt-auto">
+        <p>Media Pembelajaran Interaktif Matematika SMA — Aturan Perkalian, Permutasi & Kombinasi</p>
+    </footer>
+
+    <!-- ==============================================================
+         JAVASCRIPT LOGIKA INTERAKTIF
+         ============================================================== -->
+    <script>
+        // 1. NAVIGASI TAB PER TOPIK
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'border-white', 'text-white');
+                btn.classList.add('border-transparent', 'text-blue-200');
+            });
+
+            document.getElementById('tab-' + tabId).classList.add('active');
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.add('active', 'border-white', 'text-white');
+            activeBtn.classList.remove('border-transparent', 'text-blue-200');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 2. STEP-BY-STEP CONTROLLER UNTUK SEMUA CONTOH SOAL
+        const stepCounters = {
+            'kali-1': 1, 'kali-2': 1,
+            'perm-1': 1, 'perm-2': 1,
+            'komb-1': 1, 'komb-2': 1
+        };
+
+        function updateExampleSteps(key) {
+            const items = document.querySelectorAll(`.step-${key}`);
+            const current = stepCounters[key];
+            const total = items.length;
+
+            items.forEach((el, idx) => {
+                if (idx < current) el.classList.remove('hidden');
+                else el.classList.add('hidden');
+            });
+
+            document.getElementById(`prev-${key}`).disabled = (current <= 1);
+            document.getElementById(`next-${key}`).disabled = (current >= total);
+        }
+
+        function nextStep(key) {
+            const total = document.querySelectorAll(`.step-${key}`).length;
+            if (stepCounters[key] < total) {
+                stepCounters[key]++;
+                updateExampleSteps(key);
+            }
+        }
+
+        function prevStep(key) {
+            if (stepCounters[key] > 1) {
+                stepCounters[key]--;
+                updateExampleSteps(key);
+            }
+        }
+
+        function allStep(key) {
+            const total = document.querySelectorAll(`.step-${key}`).length;
+            stepCounters[key] = total;
+            updateExampleSteps(key);
+        }
+
+        // 3. BANK SOAL LATIHAN (ATURAN PERKALIAN, PERMUTASI, KOMBINASI)
+        const soalLatihan = [
+            {
+                id: 1,
+                kategori: "Aturan Perkalian",
+                pertanyaan: "Andi memiliki $5$ kemeja, $4$ celana panjang, dan $3$ pasang sepatu. Banyaknya pasangan setelan pakaian lengkap (kemeja, celana, dan sepatu) berbeda yang dapat dikenakan Andi adalah ...",
+                opsi: ["12 setelan", "23 setelan", "45 setelan", "60 setelan"],
+                jawabanBenar: 3, // 5 * 4 * 3 = 60
+                pembahasan: "Gunakan Aturan Perkalian karena ketiga komponen dipakai secara bersamaan: $5 \\times 4 \\times 3 = 60$ setelan pakaian berbeda."
+            },
+            {
+                id: 2,
+                kategori: "Aturan Perkalian (Filling Slots)",
+                pertanyaan: "Dari angka-angka $0, 1, 2, 3, 4, 5$ akan disusun bilangan ratusan yang terdiri dari $3$ angka berbeda. Banyaknya bilangan ratusan yang dapat dibentuk adalah ...",
+                opsi: ["100 bilangan", "120 bilangan", "150 bilangan", "180 bilangan"],
+                jawabanBenar: 0, // Ratusan (tidak boleh 0): 5 cara; Puluhan: 5 cara; Satuan: 4 cara -> 5 * 5 * 4 = 100
+                pembahasan: "Digit ratusan tidak boleh diisi angka $0$, sehingga ada $5$ pilihan ($1,2,3,4,5$). Digit puluhan dapat diisi oleh $0$ dan sisa angka ratusan ($5$ pilihan). Digit satuan tersisa $4$ pilihan. Total $= 5 \\times 5 \\times 4 = 100$ bilangan."
+            },
+            {
+                id: 3,
+                kategori: "Permutasi (Siklis)",
+                pertanyaan: "Sebuah keluarga yang terdiri dari ayah, ibu, dan $4$ orang anak duduk mengelilingi meja makan bundar. Banyaknya susunan posisi duduk yang berbeda jika ayah dan ibu harus selalu duduk berdampingan adalah ...",
+                opsi: ["24 cara", "48 cara", "120 cara", "240 cara"],
+                jawabanBenar: 1, // Ayah & Ibu dianggap 1 kesatuan -> total 5 unsur siklis = (5-1)! = 4! = 24. Posisi ayah-ibu bisa ditukar 2! = 2. Total = 24 * 2 = 48
+                pembahasan: "Ayah dan ibu dianggap $1$ kelompok, sehingga total ada $1 + 4 = 5$ elemen melingkar. Banyak posisi siklis $= (5 - 1)! = 4! = 24$. Posisi ayah dan ibu dapat bertukar tempat sebanyak $2! = 2$ cara. Total $= 24 \\times 2 = 48$ cara."
+            },
+            {
+                id: 4,
+                kategori: "Permutasi (Kejuaraan)",
+                pertanyaan: "Dalam final lomba lari $100\\text{ meter}$ yang diikuti oleh $7$ pelari, akan diperebutkan medali Emas (Juara 1), Perak (Juara 2), dan Perunggu (Juara 3). Banyaknya susunan peraih medali yang mungkin terjadi adalah ...",
+                opsi: ["35 susunan", "120 susunan", "210 susunan", "840 susunan"],
+                jawabanBenar: 2, // 7P3 = 7 * 6 * 5 = 210
+                pembahasan: "Urutan juara diperhatikan, sehingga digunakan Permutasi: ${}_7P_3 = \\frac{7!}{(7-3)!} = 7 \\times 6 \\times 5 = 210$ susunan."
+            },
+            {
+                id: 5,
+                kategori: "Kombinasi (Jabat Tangan)",
+                pertanyaan: "Dalam suatu rapat yang dihadiri oleh $12$ peserta, setiap peserta saling berjabat tangan satu sama lain tepat satu kali. Banyaknya jabat tangan yang terjadi seluruhnya adalah ...",
+                opsi: ["48 kali", "66 kali", "132 kali", "144 kali"],
+                jawabanBenar: 1, // 12C2 = (12 * 11)/2 = 66
+                pembahasan: "Satu jabat tangan terjadi antara $2$ orang tanpa memperhatikan urutan (A bersalaman dengan B sama dengan B bersalaman dengan A). Maka ${}_{12}C_2 = \\frac{12!}{2! \\cdot 10!} = \\frac{12 \\times 11}{2} = 66$ kali."
+            },
+            {
+                id: 6,
+                kategori: "Kombinasi Majemuk",
+                pertanyaan: "Dari $7$ siswa putra dan $5$ siswa putri akan dibentuk tim delegasi beranggotakan $5$ orang yang terdiri dari $3$ putra dan $2$ putri. Banyaknya cara membentuk tim tersebut adalah ...",
+                opsi: ["210 cara", "350 cara", "420 cara", "792 cara"],
+                jawabanBenar: 1, // 7C3 * 5C2 = 35 * 10 = 350
+                pembahasan: "Pilih $3$ putra dari $7$ putra: ${}_7C_3 = \\frac{7 \\times 6 \\times 5}{3 \\times 2 \\times 1} = 35$. Pilih $2$ putri dari $5$ putri: ${}_5C_2 = \\frac{5 \\times 4}{2 \\times 1} = 10$. Total cara $= 35 \\times 10 = 350$ cara."
+            }
+        ];
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-form');
+            container.innerHTML = '';
+            const huruf = ['A', 'B', 'C', 'D'];
+
+            soalLatihan.forEach((soal, idx) => {
+                let badgeClass = "bg-blue-100 text-blue-900";
+                if (soal.kategori.includes("Permutasi")) badgeClass = "bg-indigo-100 text-indigo-900";
+                if (soal.kategori.includes("Kombinasi")) badgeClass = "bg-teal-100 text-teal-900";
+
+                let opsiHTML = '';
+                soal.opsi.forEach((teks, optIdx) => {
+                    opsiHTML += `
+                        <label class="flex items-center p-3 border border-slate-200 rounded-lg hover:bg-blue-50/50 cursor-pointer transition">
+                            <input type="radio" name="soal_${soal.id}" value="${optIdx}" class="w-4 h-4 text-blue-800 focus:ring-blue-700 mr-3">
+                            <span class="font-semibold mr-2">${huruf[optIdx]}.</span>
+                            <span>${teks}</span>
+                        </label>
+                    `;
+                });
+
+                container.innerHTML += `
+                    <div class="border border-slate-200 rounded-xl p-5 bg-slate-50/40 print-clean">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <span class="font-bold text-blue-950">Soal Nomor ${idx + 1}</span>
+                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded ${badgeClass} no-print">${soal.kategori}</span>
+                        </div>
+                        <div class="mb-4 text-slate-800 leading-relaxed">${soal.pertanyaan}</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            ${opsiHTML}
+                        </div>
+                        <div id="feedback-${soal.id}" class="quiz-feedback hidden mt-4 p-3.5 rounded-lg text-sm border"></div>
+                    </div>
+                `;
+            });
+
+            if (window.MathJax) MathJax.typesetPromise();
+        }
+
+        function periksaKuis() {
+            let benar = 0;
+            let terjawab = 0;
+
+            soalLatihan.forEach((soal) => {
+                const selected = document.querySelector(`input[name="soal_${soal.id}"]:checked`);
+                const fb = document.getElementById(`feedback-${soal.id}`);
+                fb.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-300', 'text-emerald-900', 'bg-rose-50', 'border-rose-300', 'text-rose-900', 'bg-amber-50', 'border-amber-300', 'text-amber-900');
+
+                if (selected) {
+                    terjawab++;
+                    if (parseInt(selected.value) === soal.jawabanBenar) {
+                        benar++;
+                        fb.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-900');
+                        fb.innerHTML = `<p class="font-bold mb-1"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> Jawaban Benar!</p><p>${soal.pembahasan}</p>`;
+                    } else {
+                        fb.classList.add('bg-rose-50', 'border-rose-300', 'text-rose-900');
+                        fb.innerHTML = `<p class="font-bold mb-1"><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> Kurang Tepat.</p><p>${soal.pembahasan}</p>`;
+                    }
+                } else {
+                    fb.classList.add('bg-amber-50', 'border-amber-300', 'text-amber-900');
+                    fb.innerHTML = `<p class="font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Anda belum memilih jawaban untuk soal ini.</p>`;
+                }
+            });
+
+            const skor = Math.round((benar / soalLatihan.length) * 100);
+            const resultBox = document.getElementById('quiz-result-box');
+            resultBox.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-400', 'bg-amber-50', 'border-amber-400');
+            
+            if (skor >= 80) {
+                resultBox.classList.add('bg-emerald-50', 'border-emerald-400');
+                document.getElementById('result-title').textContent = "Luar Biasa! Penguasaan Kaidah Pencacahan Sangat Baik";
+            } else {
+                resultBox.classList.add('bg-amber-50', 'border-amber-400');
+                document.getElementById('result-title').textContent = "Terus Berlatih! Perhatikan Perbedaan Urutan pada Permutasi & Kombinasi";
+            }
+
+            document.getElementById('result-desc').textContent = `Benar ${benar} dari ${soalLatihan.length} soal (${terjawab} soal dijawab).`;
+            document.getElementById('result-score').textContent = skor;
+
+            if (window.MathJax) MathJax.typesetPromise();
+            resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function resetKuis() {
+            document.getElementById('quiz-form').reset();
+            document.querySelectorAll('.quiz-feedback').forEach(el => el.classList.add('hidden'));
+            document.getElementById('quiz-result-box').classList.add('hidden');
+        }
+
+        // 4. CETAK PDF
+        function cetakPDF() {
+            if (window.MathJax) {
+                MathJax.typesetPromise().then(() => window.print());
+            } else {
+                window.print();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', renderQuiz);
+    </script>
+</body>
+</html>
